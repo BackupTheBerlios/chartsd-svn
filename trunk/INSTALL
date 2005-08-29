@@ -1,0 +1,46 @@
+
+REQUIREMENTS
+============
+
+  - libgd (gd) (http://www.boutell.com/gd/)
+  - libconfuse (confuse) (http://www.nongnu.org/confuse/)
+
+NOTE: Without the libraries above, this application will not build!
+
+
+Optional Requirements
+=====================
+
+If you want to log temperatures of your cpu, mainboard or harddiscs,
+you'll also need the applications which do this:
+
+  - lm-sensors
+  - hddtemp
+
+
+Basic Installation
+==================
+
+  1. A simple "./configure && make && make install" should do it.
+
+  2. After building and installing, you have to copy the whole directory
+     "./charts.d" to /etc. It contains some sample configurations which
+     can be used to generate charts about the temperatures of the whole 
+     system.
+
+  3. Now you have to copy the file "./scripts/templog" to /usr/bin
+     This executable script will log your temperatures into a logfile,
+     which can be read by chartsd.
+     
+  4. You should create some cronjobs for the looging-script:
+     */1 * * * * /usr/bin/templog cpu &>/dev/null
+     Take a look into the sample config files for how the logfile
+     has to be formatted
+     
+  5. Finally, you have to create an init-script for the chartsd daemon.
+     the daemon has to be started as much charts you want, each instance
+     with its own configuration file.
+     (chartsd -c /path/to/config.file)
+
+
+

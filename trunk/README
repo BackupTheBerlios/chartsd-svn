@@ -1,0 +1,67 @@
+[chartsd] README
+
+
+What is this?
+=============
+
+chartsd is a daemon which generates flow-charts diagrams from
+any log-file which has a specific format.
+It can be used to generate diagrams of the statistical usage
+of the temperatures of the cpu, mainboard, harddiscs or 
+whatever.
+It also can be run more than once to generate more than one 
+diagram of more than one source log-file.
+
+
+How to use this?
+================
+
+The preparations:
+First of all, you have to create an init-script for the daemon
+or to copy the sample-init-script.sh from /usr/share/chartsd
+to /etc/init.d/chartsd.1 or /etc/rc.d/chartsd.1, this depends 
+on your distribution.
+
+NOTE: The daemon can be run more than once, so you have to name 
+the init-script like the instance, you want to run the daemon:
+for the first daemon, use "chartsd.1" as filename of the init-
+script, for the second daemon, instance two, you have to name
+the init-script "chartsd.2" and so on.
+
+If you want to run the daemon more than once, you also have to 
+change the variable "instance" in the init-script to reflect
+the instance, which also is reflected by the name of the init-
+script.
+
+How to use the daemon:
+Now you can start or stop the daemon by using the init-
+script(s).
+
+NOTE: READ THE INSTRUCTIONS AND COMMENTS IN THE CONFIGURATION-
+FILES IN "/usr/share/chartsd" CARFULLY TO UNDERSTAND HOW SUCH 
+A LOGFILE HAS TO LOOK LIKE AND HOW TO USE THE CONFIGURATIONS.
+
+You also have to change the configurationfile-path in the 
+init-script to refelct your settings and logfiles.
+
+
+Who to ask about problems and questions?
+========================================
+
+You can find me on IRC in the following channels:
+
+    #linux-stats
+    #archlinux
+    #archlinux.de
+    #linux.de
+    #gnuffy
+
+... on the Freenode-network (irc.freenode.net)
+
+I'll be glad if you contact me for feedback, bugreports and/or 
+questions.
+
+
+Have fun.
+
+dma147

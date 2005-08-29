@@ -1,0 +1,35 @@
+#!/bin/sh
+
+CPUFILE='/var/log/charts.cpu.log'
+MBFILE='/var/log/charts.mb.log'
+HDAFILE='/var/log/charts.hda.log'
+HDBFILE='/var/log/charts.hdb.log'
+
+if [ "$1" == "" ]; then
+    what="cpu"
+else
+    what="$1"
+fi
+
+TS=`date +%s`
+
+MB=`sensors | grep "M/B Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
+CPU=`sensors | grep "CPU Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
+HDA=`/usr/sbin/hddtemp /dev/hda | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
+HDB=`/usr/sbin/hddtemp /dev/hdb | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
+
+case "${what}" in
+    cpu)
+	echo "${TS}	${CPU}" >> ${CPUFILE}
+	;;
+    mb)
+	echo "${TS}	${MB}" >> ${MBFILE}
+	;;
+    hda)
+	echo "${TS}	${HDA}" >> ${HDAFILE}
+	;;
+    hdb)
+	echo "${TS}	${HDB}" >> ${HDBFILE}
+	;;
+esac
+
