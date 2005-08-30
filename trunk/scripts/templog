@@ -4,6 +4,11 @@ CPUFILE='/var/log/charts.cpu.log'
 MBFILE='/var/log/charts.mb.log'
 HDAFILE='/var/log/charts.hda.log'
 HDBFILE='/var/log/charts.hdb.log'
+LOADFILE='/var/log/charts.load.log'
+SWAPFILE='/var/log/charts.swap.log'
+
+
+##################################################
 
 if [ "$1" == "" ]; then
     what="cpu"
@@ -13,23 +18,39 @@ fi
 
 TS=`date +%s`
 
-MB=`sensors | grep "M/B Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
-CPU=`sensors | grep "CPU Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
-HDA=`/usr/sbin/hddtemp /dev/hda | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
-HDB=`/usr/sbin/hddtemp /dev/hdb | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
-
 case "${what}" in
     cpu)
+	CPU=`sensors | grep "CPU Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
 	echo "${TS}	${CPU}" >> ${CPUFILE}
 	;;
     mb)
+	MB=`sensors | grep "M/B Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
 	echo "${TS}	${MB}" >> ${MBFILE}
 	;;
     hda)
+	HDA=`/usr/sbin/hddtemp /dev/hda | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
 	echo "${TS}	${HDA}" >> ${HDAFILE}
 	;;
     hdb)
+	HDB=`/usr/sbin/hddtemp /dev/hdb | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
 	echo "${TS}	${HDB}" >> ${HDBFILE}
+	;;
+    load)
+	LOAD1=`cat /proc/stat | sed -n '1 s/^[^0-9]*[0-9]*[^0-9]*\([0-9]*\)[^0-9]*[0-9]*[^0-9]*[0-9]*[^0-9]*.*$/\1/p'`
+	LOAD2=`cat /proc/stat | sed -n '1 s/^[^0-9]*[0-9]*[^0-9]*[0-9]*[^0-9]*\([0-9]*\)[^0-9]*[0-9]*[^0-9]*.*$/\1/p'`
+	LOAD3=`cat /proc/stat | sed -n '1 s/^[^0-9]*[0-9]*[^0-9]*[0-9]*[^0-9]*[0-9]*[^0-9]*\([0-9]*\)[^0-9]*.*$/\1/p'`
+	LOAD100=$(( ${LOAD1} + ${LOAD2} + ${LOAD3} ))
+	LOAD1=`echo "scale=4; ${LOAD1}*100/${LOAD100}" | bc -l`
+	LOAD2=`echo "scale=4; ${LOAD2}*100/${LOAD100}" | bc -l`
+	LOAD3=`echo "scale=4; ${LOAD3}*100/${LOAD100}" | bc -l`
+	if [ "${LOAD1:FIRST:1}" == "." ]; then LOAD1="0${LOAD1}"; fi
+	if [ "${LOAD2:FIRST:1}" == "." ]; then LOAD2="0${LOAD2}"; fi
+	if [ "${LOAD3:FIRST:1}" == "." ]; then LOAD3="0${LOAD3}"; fi
+	echo "${TS}	${LOAD1}	${LOAD2}	${LOAD3}" >> ${LOADFILE}
+	;;
+    swap)
+	SWAP=`x=($(</proc/swaps)); echo ${x[8]}`
+	echo "${TS}	${SWAP}" >> ${SWAPFILE}
 	;;
 esac
 

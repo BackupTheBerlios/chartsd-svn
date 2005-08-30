@@ -9,6 +9,9 @@ CONFIGFILE="/usr/share/chartsd/temp.cpu.conf"
 instance=1
 
 
+
+
+
 program="chartsd"
 PATH=/usr/sbin:/usr/local/bin:${PATH}
 
@@ -34,7 +37,6 @@ case "$1" in
 	    pid=`ps ax | grep "${program} -c ${CONFIGFILE}" | head -n 1 | sed -e 's/^\s*\([0-9]*\)\s.*/\1/'`
 	    rm -f /var/run/${program}.${instance}.pid &>/dev/null
 	    echo ${pid} > /var/run/${program}.${instance}.pid
-	    echo " > new PID is: ${pid}"
 	fi
 	;;
   stop)
@@ -42,11 +44,11 @@ case "$1" in
 	    echo "${program} (instance: ${instance}) is not running! Start it first!"
 	else
 	    # Stop daemon.
-	    echo " - Shutting down ${program}..."
+	    echo " - Shutting down ${program} (instance: ${instance})..."
 	    kill -9 ${PID}
 	    status=`ps -p ${PID} -o comm=`
 	    if [ "${status}" != "" ]; then
-		echo "${program} could not be stopped!!!"
+		echo "${program} (instance: ${instance}) could not be stopped!!!"
 	    else
 		rm -f /var/run/${program}.${instance}.pid &>/dev/null
 	    fi

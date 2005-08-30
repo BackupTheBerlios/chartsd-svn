@@ -50,93 +50,104 @@
 
 
 /** variables declaration */
-FILE *png;
-FILE *pnd;
-FILE *abar;
-cfg_t *cfg;
-gdImagePtr image;
-struct tm *zeit;
+gdImagePtr 	image;
+struct tm 	*zeit;
 struct timeval t_now, t_last;
 typedef void (*sighandler_t)(int);
 
-const char *program;
-const char *Version="0.4";
+FILE 				*png;
+FILE 				*pnd;
+FILE 				*abar;
+cfg_t 			*cfg;
 
-char *config_file = "/etc/charts.d/temp.hda.conf";
-char *sensor = NULL;
-char *unit = NULL;
-char *datafile = NULL;
-char *diagramfile = NULL;
-char *INOUT;
-char starttime[20];
-char stoptime[20];
-char s[64]; 
-char maxin[20];
-char maxout[20];
-char avgout[20];
-char highout[20];
-char lowout[20];
-char dia_title[256];
+const char 	*program;
+const char 	*Version						=	"0.4";
 
-float XStep;
-float YStep;
-float total = 0.0;
-float average = 0.0;
-float highest = 0.0;
-float lowest = 0.0;
-double timedelta;
+char 				*config_file 				=	"/etc/charts.d/temp.hda.conf";
+char 				*sensor 						= NULL;
+char 				*unit 							= NULL;
+char 				*datafile 					= NULL;
+char 				*diagramfile 				= NULL;
+char 				*INOUT;
+char 				starttime[20];
+char 				stoptime[20];
+char 				s[64]; 
+char 				maxin[20];
+char 				maxout[20];
+char 				avgout[20];
+char 				highout[20];
+char 				lowout[20];
+char				gridvalue[20];
+char 				dia_title[256];
 
-int interval = 60;
-int shown_intervals = 300;
-int WIDTH = 600;
-int HEIGHT = 250;
-int maxvalue = 65;
-int minvalue = 30;
-int run=1;
-int LINES = 0;
-int rcount = 0;
-int R = 0;
-int G = 255;
-int B = 0;
-int ac = 0;
-int ca = 0;
-int opt;
-int XPOS;
-int YPOS;
-int NULLX;
-int NULLY;
-int URSPRUNGX;
-int URSPRUNGY;
-int maxX;
-int maxY;
-int Xlength;
-int Ylength;
-int X1;
-int X2;
-int Y1;
-int Y2;
-int black;
-int white;
-int red;
-int green;
-int grey;
-int blue;
-int linecolor;
-int thiscolor;
-int i;
-int j;
-int LINESTART;
-int start;
-int stop;
-int diff;
-int LINESTART;
+float 			XStep;
+float 			YStep;
+float				gridStep;
+float 			total 							= 0.0;
+float 			average 						= 0.0;
+float 			highest 						= 0.0;
+float 			lowest 							= 0.0;
+double 			timedelta;
+
+int 				interval						= 60;
+int 				shown_intervals 		= 300;
+int 				WIDTH 							= 600;
+int 				HEIGHT 							= 250;
+int 				maxvalue 						= 65;
+int 				minvalue 						= 30;
+int					show_maxvalue_line	=	1;
+int					show_minvalue_line	= 1;
+int					show_average_line		= 1;
+int					show_highest_value	= 1;
+int					show_lowest_value		= 1;
+int					show_grid_lines			= 1;
+int 				run									=	1;
+int 				LINES 							= 0;
+int 				rcount 							= 0;
+int 				R 									= 0;
+int 				G 									= 255;
+int 				B 									= 0;
+int 				ac 									= 0;
+int 				ca 									= 0;
+int 				opt;
+int 				XPOS;
+int 				YPOS;
+int 				NULLX;
+int 				NULLY;
+int 				URSPRUNGX;
+int 				URSPRUNGY;
+int 				maxX;
+int					minX;
+int 				maxY;
+int					minY;
+int 				Xlength;
+int 				Ylength;
+int 				X1;
+int 				X2;
+int 				Y1;
+int 				Y2;
+int 				black;
+int 				white;
+int 				red;
+int 				green;
+int 				grey;
+int					lightgrey;
+int 				blue;
+int 				linecolor;
+int 				thiscolor;
+int 				i;
+int 				j;
+int 				LINESTART;
+int 				start;
+int 				stop;
+int 				diff;
+int 				LINESTART;
 
 
 /** function declaration */
 int intvgl(const void *v1, const void *v2);
 static sighandler_t handle_signal (int sig_nr, sighandler_t signalhandler);
 static void start_daemon (const char *log_name, int facility);
-void skipline(FILE *f);
 void usage(int err);
 void version(int err);
 int fileExists (char * fileName);
@@ -144,12 +155,14 @@ int main(int argc, char *argv[]);
 
 
 
-/** functions */
+/** a helper function for qsort() */
 int intvgl(const void *v1, const void *v2)
 {
 	return (*(int *)v1 - *(int *)v2);
 }
 
+
+/** signal handler */
 static sighandler_t handle_signal (int sig_nr, sighandler_t signalhandler)
 {
   struct sigaction neu_sig, alt_sig;
@@ -161,6 +174,8 @@ static sighandler_t handle_signal (int sig_nr, sighandler_t signalhandler)
   return alt_sig.sa_handler;
 }
 
+
+/** this function starts the daemon process */
 static void start_daemon (const char *log_name, int facility)
 {
   int i;
@@ -184,6 +199,7 @@ static void start_daemon (const char *log_name, int facility)
 }
 
 
+/** checks of a given file exists */
 int fileExists (char * fileName)
 {
   struct stat buf;
@@ -195,15 +211,8 @@ int fileExists (char * fileName)
   return 0;
 }
 
-void skipline(FILE *f)
-{
-  int ch;
-  do 
-  {
-    ch = getc(f);
-  } while ( ch != '\n' && ch != EOF );
-}
 
+/** set the allowed command line arguments */
 const struct option longopts[] = {
   { "config-file",  1, 0, 'c' },
   { "help",         0, 0, 'h' },
@@ -211,6 +220,8 @@ const struct option longopts[] = {
   { 0, 0, 0, 0 }
 };
 
+
+/** prints the help screen */
 void usage(int err)
 {
   fprintf(stderr,
@@ -223,6 +234,8 @@ void usage(int err)
   exit(err);
 }
 
+
+/** prints the version screen */
 void version(int err)
 {
   printf("\nThis is %s %s\n", program, Version);
@@ -232,15 +245,23 @@ void version(int err)
   exit(err);
 }
 
+
+/** main function */
 int main(int argc, char *argv[])
 {
+  
+  /** get the name of this application */
   program = argv[0];
   
+  
+  /** set some default values for some variables */
   sensor = strdup("Temperature of harddisc (hda)");
   unit = strdup("C");
   datafile = strdup("/var/log/charts.hda.log");
   diagramfile = strdup("/tmp/charts.hda.png");
   
+  
+  /** check which cli arguments were given */
   while ( (opt = getopt_long(argc, argv, "c:hv", longopts, NULL)) != -1 ) 
   {
     switch ( opt ) 
@@ -264,6 +285,8 @@ int main(int argc, char *argv[])
   /** starting the daemon-process */
   start_daemon ("chartsd", LOG_LOCAL0);
   
+  
+  /** check if the configuration file exists */
   if ( !fileExists(config_file) )
   {
     fprintf(stderr, "%s: %s: configuration file not found!\n", argv[0], config_file);
@@ -273,6 +296,8 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   
+  
+  /** this is some stuff from libconfuse to parse the configuration file */
   cfg_opt_t opts[] = {
     CFG_SIMPLE_STR("SENSOR", &sensor),
     CFG_SIMPLE_STR("UNIT", &unit),
@@ -284,6 +309,12 @@ int main(int argc, char *argv[])
     CFG_SIMPLE_INT("HEIGHT", &HEIGHT),
     CFG_SIMPLE_INT("MAXVALUE", &maxvalue),
     CFG_SIMPLE_INT("MINVALUE", &minvalue),
+    CFG_SIMPLE_INT("SHOW_MAXVALUE_LINE", &show_maxvalue_line),
+    CFG_SIMPLE_INT("SHOW_MINVALUE_LINE", &show_minvalue_line),
+    CFG_SIMPLE_INT("SHOW_AVERAGE_LINE", &show_average_line),
+    CFG_SIMPLE_INT("SHOW_HIGHEST_VALUE", &show_highest_value),
+    CFG_SIMPLE_INT("SHOW_LOWEST_VALUE", &show_lowest_value),
+    CFG_SIMPLE_INT("SHOW_GRID_LINES", &show_grid_lines),
     CFG_SIMPLE_INT("R", &R),
     CFG_SIMPLE_INT("G", &G),
     CFG_SIMPLE_INT("B", &B),
@@ -292,7 +323,9 @@ int main(int argc, char *argv[])
   cfg = cfg_init(opts, 0);
   cfg_parse(cfg, config_file);
   cfg_free(cfg);
-
+	
+	
+	/** check if the log-file exists */
   if ( !fileExists(datafile) )
   {
     fprintf(stderr, "%s: %s: data file not found!\n", argv[0], datafile);
@@ -302,25 +335,28 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   
-
+	
+	/** set the interval to 1 if it is smaller than 1 */
   if (interval < 1) 
-  {
     interval = 1;
-  }
 
+  
+  /** the main daemon loop */
   while (run)
   {
     
+    /** tell syslog that we have started the daemon */
     if (rcount == 0)
       syslog( LOG_NOTICE, "chartsd started.\n");
     
-    gettimeofday(&t_now, NULL);
     
+    /** get the actual time of day */
+    gettimeofday(&t_now, NULL);
     timedelta = (double)(t_now.tv_sec - t_last.tv_sec) + 
         (t_now.tv_usec - t_last.tv_usec)/1000000;
     
     
-    
+    /** open the log-file for reading */
     if ( !(abar = fopen(datafile, "r")) )
     {
       fprintf(stderr, "%s: %s: %s\n", argv[0], datafile, strerror(errno));
@@ -330,14 +366,19 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
     
+    
+    /** count the lines of the log-file */
     LINES = 0;
     while ( (fgets(s,64,abar)) != NULL )      
       LINES++;
     LINES++;
+    
+    
+    /** define an array for the data */
     float DATA[LINES][2];
     
     
-    
+    /** create a new picture */
     if( !(image = gdImageCreate(WIDTH, HEIGHT)) )
     {
       fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
@@ -347,19 +388,30 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
     
-    white = gdImageColorAllocate(image, 255, 255, 255);
-    black = gdImageColorAllocate(image, 0, 0, 0);
-    red   = gdImageColorAllocate(image, 255, 0, 0);
-    green = gdImageColorAllocate(image, 0, 255, 0);
-    grey  = gdImageColorAllocate(image, 127, 127, 127);
-    blue  = gdImageColorAllocate(image, 0, 0, 255);
     
+    /** set some colors */
+    white 			= gdImageColorAllocate(image, 255, 255, 255);
+    black 			= gdImageColorAllocate(image, 0, 0, 0);
+    red   			= gdImageColorAllocate(image, 255, 0, 0);
+    green 			= gdImageColorAllocate(image, 0, 255, 0);
+    grey  			= gdImageColorAllocate(image, 127, 127, 127);
+    lightgrey  	= gdImageColorAllocate(image, 230, 230, 230);
+    blue  			= gdImageColorAllocate(image, 0, 0, 255);
+    
+    
+    /** set the color of the data-line */
     linecolor = gdImageColorAllocate(image, R, G, B);
     
+    
+    /** set the background to white */
     image->transparent = white;
     
     
+    /** set the filepointer to the beginning of the log-file */
     fseek(abar, 0L, SEEK_SET);
+    
+    
+    /** read the log-file and give the data to the array */
     for (i=0; i<LINES; i++)
     {
       for (j=0; j<2; j++)
@@ -369,13 +421,23 @@ int main(int argc, char *argv[])
     }
     fclose(abar);
     
+    
+    /** the last line of the log-file usual contains only zeros */
     LINES = LINES - 1;
+    
+    
+    /** set the beginning of the data, the start (we don't want the whole logfile in the diagram!) */
     if ((LINES-shown_intervals) <= 0)
       LINESTART = 0;
     else
       LINESTART = (LINES-shown_intervals);
     
+    
+    /** set total counter to 0 */
     total = 0.0;
+    
+    
+    /** we have to create a new data-array because the values are in a wrong direction */
     float VALUES[2][(LINES-LINESTART)];
     for (j=0; j<2; j++)
     {
@@ -384,15 +446,20 @@ int main(int argc, char *argv[])
       {
       	if (j == 1)
       	{
+      		/** counts the total value */
       		total = (total + (float)DATA[i][j]);
       	}
         VALUES[j][ac] = (float)DATA[i][j];
         ac++;
       }
     }
+    
+    
+    /** calculate the average of the given data */
     average = (total / ac);
     
     
+    /** some stuff to get the highest and the lowest value */
     float values[ac];
     j=1;
     ca = 0;
@@ -402,7 +469,6 @@ int main(int argc, char *argv[])
 			ca++;
 		}
     qsort(values, ca, sizeof(values[0]), intvgl);
-    
     highest = values[(ca-1)];
     lowest = values[0];
     
@@ -414,57 +480,84 @@ int main(int argc, char *argv[])
     URSPRUNGX = NULLX+60;
     URSPRUNGY = NULLY-20;
     
-   
+    
+    /** get the starting and the stopping time */
     start = (int)VALUES[0][0];
     stop = (int)VALUES[0][(ac-1)];
-    
-    
     diff = (stop - start);
-    
     zeit = localtime( (time_t*)&start );
     strftime( starttime, 20, "%I:%M:%S%p", zeit);
-    
     zeit = localtime( (time_t*)&stop );
     strftime( stoptime, 20, "%I:%M:%S%p", zeit);    
     
     
     
-    /** **************   START OF ACTUAL USE OF BANDWIDTH ************* */
+    /** **************   START OF DIAGRAM GENERATION ************* */
     Xlength = (WIDTH - 20) - 45;
     Ylength = (HEIGHT - 20) - 20;
     maxY = maxvalue + (maxvalue / 3);
+    minY = 0;
     maxX = shown_intervals;
+    minX = 0;
     
     XStep = ( (float)Xlength / (float)maxX );
     YStep = ( (float)Ylength / (float)maxY );
     
-    sprintf(maxin, "%i %s", maxvalue, unit);
-    sprintf(maxout, "%i %s", minvalue, unit);
+    sprintf(maxin, "%.2f %s", (float)maxvalue, unit);
+    sprintf(maxout, "%.2f %s", (float)minvalue, unit);
     sprintf(avgout, "%.2f %s", average, unit);
     sprintf(highout, "Highest: %.2f %s", highest, unit);
     sprintf(lowout, "Lowest: %.2f %s", lowest, unit);
+    
     
     /** Title of diagram */
     sprintf(dia_title, "%s    (%s - %s)", sensor, starttime, stoptime);
     gdImageString(image, gdFontMediumBold, 2, 2, dia_title, black);
     
+    
+    /** lightgrey grid lines */
+    if (show_grid_lines == 1)
+    {
+    	gridStep = (maxY / 8);
+    	for (i=1; i<=8; i++)
+    	{
+				char gridvalue[20];
+    		sprintf(gridvalue, "%.2f %s", (gridStep * i), unit);
+    		gdImageLine (image, (NULLX+55), ((NULLY - 20)-(YStep * (gridStep * i))), (WIDTH-5), ((NULLY - 20)-(YStep * (gridStep * i))), lightgrey);
+	    	gdImageString(image, gdFontSmall, (NULLX+2), (((NULLY - 20)-(YStep * (gridStep * i))) - 5), gridvalue, lightgrey);
+    	}
+    }
+    
+    
     /** axes of coordinates */
     gdImageLine (image, (NULLX+60), (NULLY-15), (NULLX+60), 15, black);
     gdImageLine (image, (NULLX+55), (NULLY-20), (WIDTH-5), (NULLY-20), black);
     
+    
     /** max/min/average lines */
-    gdImageLine (image, (NULLX+55), (URSPRUNGY - (YStep * maxvalue)), (WIDTH-5), (URSPRUNGY - (YStep * maxvalue)), red);
-    gdImageLine (image, (NULLX+55), (URSPRUNGY - (YStep * minvalue)), (WIDTH-5), (URSPRUNGY - (YStep * minvalue)), blue);
-    gdImageDashedLine (image, (NULLX+55), (URSPRUNGY - (YStep * average)), (WIDTH-5), (URSPRUNGY - (YStep * average)), green);
+    if (show_maxvalue_line == 1)
+    	gdImageLine (image, (NULLX+55), (URSPRUNGY - (YStep * maxvalue)), (WIDTH-5), (URSPRUNGY - (YStep * maxvalue)), red);
+    if (show_minvalue_line == 1)
+    	gdImageLine (image, (NULLX+55), (URSPRUNGY - (YStep * minvalue)), (WIDTH-5), (URSPRUNGY - (YStep * minvalue)), blue);
+    if (show_average_line == 1)
+    	gdImageDashedLine (image, (NULLX+55), (URSPRUNGY - (YStep * average)), (WIDTH-5), (URSPRUNGY - (YStep * average)), green);
+    
     
     /** max/min/average values */
-    gdImageString(image, gdFontSmall, (NULLX+2), (URSPRUNGY - (YStep * maxvalue) - 5), maxin, black);
-    gdImageString(image, gdFontSmall, (NULLX+2), (URSPRUNGY - (YStep * minvalue) - 5), maxout, black);
-    gdImageString(image, gdFontSmall, (NULLX+2), (URSPRUNGY - (YStep * average) - 5), avgout, black);
+    if (show_maxvalue_line == 1)
+    	gdImageString(image, gdFontSmall, (NULLX+2), (URSPRUNGY - (YStep * maxvalue) - 5), maxin, red);
+    if (show_minvalue_line == 1)
+  	  gdImageString(image, gdFontSmall, (NULLX+2), (URSPRUNGY - (YStep * minvalue) - 5), maxout, blue);
+    if (show_average_line == 1)
+	    gdImageString(image, gdFontSmall, (NULLX+2), (URSPRUNGY - (YStep * average) - 5), avgout, green);
+    
     
     /** highest/lowest display */
-    gdImageString(image, gdFontSmall, (NULLX+15), (NULLY-13), highout, red);
-    gdImageString(image, gdFontSmall, (NULLX+150), (NULLY-13), lowout, blue);
+    if (show_highest_value == 1)
+    	gdImageString(image, gdFontSmall, (NULLX+15), (NULLY-13), highout, red);
+    if (show_lowest_value == 1)
+    	gdImageString(image, gdFontSmall, (NULLX+150), (NULLY-13), lowout, blue);
+    
     
     for (j=1; j<2; j++)
     {
@@ -480,11 +573,13 @@ int main(int argc, char *argv[])
         
       }
     }
-    /** **************   END OF ACTUAL USE OF BANDWIDTH ************* */
+    /** **************   END OF DIAGRAM GENERATION ************* */
+    
     
     /** MY COPYRIGHT! PLEASE LEAVE THIS FOLLOWING LINE UNTOUCHED! */
     gdImageString(image, gdFontSmall, (WIDTH-155), (NULLY-13), "http://chartsd.berlios.de", black);
     /** MY COPYRIGHT! PLEASE LEAVE THE LINE ABOVE UNTOUCHED! */
+    
     
     if ( !(png = fopen(diagramfile, "wb")) )
     {
