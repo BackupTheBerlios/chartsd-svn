@@ -60,7 +60,7 @@ struct timeval t_now, t_last;
 typedef void (*sighandler_t)(int);
 
 const char *program;
-const char *Version="0.3";
+const char *Version="0.4";
 
 char *config_file = "/etc/charts.d/temp.hda.conf";
 char *sensor = NULL;
@@ -279,6 +279,7 @@ int main(int argc, char *argv[])
     CFG_SIMPLE_STR("DATAFILE", &datafile),
     CFG_SIMPLE_STR("DIAGRAMFILE", &diagramfile),
     CFG_SIMPLE_INT("INTERVAL", &interval),
+    CFG_SIMPLE_INT("SHOWN_INTERVALS", &shown_intervals),
     CFG_SIMPLE_INT("WIDTH", &WIDTH),
     CFG_SIMPLE_INT("HEIGHT", &HEIGHT),
     CFG_SIMPLE_INT("MAXVALUE", &maxvalue),

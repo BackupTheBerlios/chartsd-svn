@@ -11,4 +11,4 @@ EXTRA_DIST = \
 	config.guess config.sub ltmain.sh
 
 SUBDIRS = \
-	src scripts charts.d
+	doc src scripts charts.d
