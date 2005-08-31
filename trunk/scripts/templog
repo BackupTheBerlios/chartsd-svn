@@ -49,7 +49,7 @@ case "${what}" in
 	echo "${TS}	${LOAD1}	${LOAD2}	${LOAD3}" >> ${LOADFILE}
 	;;
     swap)
-	SWAP=`x=($(</proc/swaps)); echo ${x[8]}`
+	SWAP=`x=($(</proc/swaps)); echo "scale=4; ${x[8]}/1024" | bc -l`
 	echo "${TS}	${SWAP}" >> ${SWAPFILE}
 	;;
 esac
