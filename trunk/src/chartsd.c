@@ -312,10 +312,6 @@ int main(int argc, char *argv[])
   }
   
   
-  /** starting the daemon-process */
-  start_daemon ("chartsd", LOG_LOCAL0);
-  
-  
   /** check if the configuration file exists */
   if ( !fileExists(config_file) )
   {
@@ -381,6 +377,10 @@ int main(int argc, char *argv[])
   if (interval < 1) 
     interval = 1;
 
+  
+  /** starting the daemon-process */
+  start_daemon ("chartsd", LOG_LOCAL0);
+  
   
   /** the main daemon loop */
   while (run)
