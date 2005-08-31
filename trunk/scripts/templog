@@ -1,4 +1,7 @@
 #!/bin/sh
+# templog
+# Logfile generator for chartsd
+
 
 CPUFILE='/var/log/charts.cpu.log'
 MBFILE='/var/log/charts.mb.log'
@@ -6,6 +9,9 @@ HDAFILE='/var/log/charts.hda.log'
 HDBFILE='/var/log/charts.hdb.log'
 LOADFILE='/var/log/charts.load.log'
 SWAPFILE='/var/log/charts.swap.log'
+
+NETFILE='/var/log/charts.net.log'; DEVICE='ppp0'
+
 
 
 ##################################################
@@ -19,22 +25,32 @@ fi
 TS=`date +%s`
 
 case "${what}" in
+
+
     cpu)
 	CPU=`sensors | grep "CPU Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
 	echo "${TS}	${CPU}" >> ${CPUFILE}
 	;;
+
+
     mb)
 	MB=`sensors | grep "M/B Temp" | sed -e 's/[^:]*: *[+]*\([0-9\.]*\) C *(.*/\1/'`
 	echo "${TS}	${MB}" >> ${MBFILE}
 	;;
+
+
     hda)
 	HDA=`/usr/sbin/hddtemp /dev/hda | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
 	echo "${TS}	${HDA}" >> ${HDAFILE}
 	;;
+
+
     hdb)
 	HDB=`/usr/sbin/hddtemp /dev/hdb | sed -e 's/.*:.*: *\([0-9\.]*\) *C/\1/'`
 	echo "${TS}	${HDB}" >> ${HDBFILE}
 	;;
+
+
     load)
 	LOAD1=`cat /proc/stat | sed -n '1 s/^[^0-9]*[0-9]*[^0-9]*\([0-9]*\)[^0-9]*[0-9]*[^0-9]*[0-9]*[^0-9]*.*$/\1/p'`
 	LOAD2=`cat /proc/stat | sed -n '1 s/^[^0-9]*[0-9]*[^0-9]*[0-9]*[^0-9]*\([0-9]*\)[^0-9]*[0-9]*[^0-9]*.*$/\1/p'`
@@ -48,9 +64,47 @@ case "${what}" in
 	if [ "${LOAD3:FIRST:1}" == "." ]; then LOAD3="0${LOAD3}"; fi
 	echo "${TS}	${LOAD1}	${LOAD2}	${LOAD3}" >> ${LOADFILE}
 	;;
+
+
     swap)
 	SWAP=`x=($(</proc/swaps)); echo "scale=4; ${x[8]}/1024" | bc -l`
 	echo "${TS}	${SWAP}" >> ${SWAPFILE}
 	;;
+
+
+    net)
+	FIRST=`grep ${DEVICE} /proc/net/dev`
+	sleep 1
+	SECOND=`grep ${DEVICE} /proc/net/dev`
+	FIRSTIN=`echo ${FIRST} |  sed -e 's/^[^:]*:\([0-9]*\) *.*$/\1/'`
+	FIRSTOUT=`echo ${FIRST} |  sed -e 's/^[^:]*:[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *\([0-9]*\) *.*$/\1/'`
+	SECIN=`echo ${SECOND} |  sed -e 's/^[^:]*:\([0-9]*\) *.*$/\1/'`
+	SECOUT=`echo ${SECOND} |  sed -e 's/^[^:]*:[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *\([0-9]*\) *.*$/\1/'`
+	IN=$(( ${SECIN} - ${FIRSTIN} ))
+	OUT=$(( ${SECOUT} - ${FIRSTOUT} ))
+	# if you want bits instead of bytes, then comment the
+	# folowing two lines out:
+	# IN=$(( ${IN} * 8 ))
+	# OUT=$(( ${OUT} * 8 ))
+	echo "${TS}	${IN}	${OUT}" >> ${NETFILE}
+	;;
+
+
+
 esac
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
