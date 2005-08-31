@@ -61,7 +61,7 @@ FILE 				*abar;
 cfg_t 			*cfg;
 
 const char 	*program;
-const char 	*Version						=	"0.4";
+const char 	*Version						=	"0.5";
 
 char 				*config_file 				=	"/etc/charts.d/temp.hda.conf";
 char 				*sensor 						= NULL;
@@ -71,7 +71,7 @@ char 				*diagramfile 				= NULL;
 char 				*INOUT;
 char 				starttime[20];
 char 				stoptime[20];
-char 				s[64]; 
+char 				s[64];
 char 				maxin[20];
 char 				maxout[20];
 char 				avgout[20];
@@ -79,6 +79,8 @@ char 				highout[20];
 char 				lowout[20];
 char				gridvalue[20];
 char 				dia_title[256];
+char				*LINE[8];
+
 
 float 			XStep;
 float 			YStep;
@@ -101,14 +103,19 @@ int					show_average_line		= 1;
 int					show_highest_value	= 1;
 int					show_lowest_value		= 1;
 int					show_grid_lines			= 1;
+int					show_legend					= 0;
+int					legend_pos					= 2;
+int					legend_width				= 120;
 int 				run									=	1;
 int 				LINES 							= 0;
+int					COLS								= 0;
 int 				rcount 							= 0;
 int 				R 									= 0;
 int 				G 									= 255;
 int 				B 									= 0;
 int 				ac 									= 0;
 int 				ca 									= 0;
+int					COLOR[7];
 int 				opt;
 int 				XPOS;
 int 				YPOS;
@@ -133,15 +140,31 @@ int 				green;
 int 				grey;
 int					lightgrey;
 int 				blue;
+int 				cyan;
+int 				magenta;
+int 				gold;
+int 				darkgreen;
+int 				darkcyan;
+int 				darkgold;
 int 				linecolor;
 int 				thiscolor;
+int					darkgrey;
 int 				i;
 int 				j;
+int					c;
 int 				LINESTART;
 int 				start;
 int 				stop;
 int 				diff;
 int 				LINESTART;
+int 				leglines;
+int 				legheight;
+int  				legwidth;
+int  				leg_ursprungX;    
+int  				leg_ursprungY;
+int  				left;
+int  				top;
+
 
 
 /** function declaration */
@@ -259,7 +282,14 @@ int main(int argc, char *argv[])
   unit = strdup("C");
   datafile = strdup("/var/log/charts.hda.log");
   diagramfile = strdup("/tmp/charts.hda.png");
-  
+  LINE[0] = strdup("Line 1");
+  LINE[1] = strdup("Line 2");
+  LINE[2] = strdup("Line 3");
+  LINE[3] = strdup("Line 4");
+  LINE[4] = strdup("Line 5");
+  LINE[5] = strdup("Line 6");
+  LINE[6] = strdup("Line 7");
+  LINE[7] = strdup("Line 8");
   
   /** check which cli arguments were given */
   while ( (opt = getopt_long(argc, argv, "c:hv", longopts, NULL)) != -1 ) 
@@ -303,6 +333,14 @@ int main(int argc, char *argv[])
     CFG_SIMPLE_STR("UNIT", &unit),
     CFG_SIMPLE_STR("DATAFILE", &datafile),
     CFG_SIMPLE_STR("DIAGRAMFILE", &diagramfile),
+    CFG_SIMPLE_STR("LINE_1", &LINE[0]),
+    CFG_SIMPLE_STR("LINE_2", &LINE[1]),
+    CFG_SIMPLE_STR("LINE_3", &LINE[2]),
+    CFG_SIMPLE_STR("LINE_4", &LINE[3]),
+    CFG_SIMPLE_STR("LINE_5", &LINE[4]),
+    CFG_SIMPLE_STR("LINE_6", &LINE[5]),
+    CFG_SIMPLE_STR("LINE_7", &LINE[6]),
+    CFG_SIMPLE_STR("LINE_8", &LINE[7]),
     CFG_SIMPLE_INT("INTERVAL", &interval),
     CFG_SIMPLE_INT("SHOWN_INTERVALS", &shown_intervals),
     CFG_SIMPLE_INT("WIDTH", &WIDTH),
@@ -315,6 +353,9 @@ int main(int argc, char *argv[])
     CFG_SIMPLE_INT("SHOW_HIGHEST_VALUE", &show_highest_value),
     CFG_SIMPLE_INT("SHOW_LOWEST_VALUE", &show_lowest_value),
     CFG_SIMPLE_INT("SHOW_GRID_LINES", &show_grid_lines),
+    CFG_SIMPLE_INT("SHOW_LEGEND", &show_legend),
+    CFG_SIMPLE_INT("LEGEND_POSITION", &legend_pos),
+    CFG_SIMPLE_INT("LEGEND_WIDTH", &legend_width),
     CFG_SIMPLE_INT("R", &R),
     CFG_SIMPLE_INT("G", &G),
     CFG_SIMPLE_INT("B", &B),
@@ -374,37 +415,24 @@ int main(int argc, char *argv[])
     LINES++;
     
     
-    /** define an array for the data */
-    float DATA[LINES][2];
+    /** set the filepointer to the beginning of the log-file */
+    fseek(abar, 0L, SEEK_SET);
     
     
-    /** create a new picture */
-    if( !(image = gdImageCreate(WIDTH, HEIGHT)) )
+    /** count the columns in the logfile */
+    COLS = 0;
+    while ( (c = fgetc(abar)) != EOF )
     {
-      fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
-      syslog( LOG_ERR, "%s: %s\n", argv[0], strerror(errno));
-      syslog( LOG_ERR, "chartsd shutting down!");
-      run=0;
-      return EXIT_FAILURE;
+    	if (c == '\n')
+    		break;
+    	if (c == '\t')
+    		COLS++;
     }
+		COLS++;
     
     
-    /** set some colors */
-    white 			= gdImageColorAllocate(image, 255, 255, 255);
-    black 			= gdImageColorAllocate(image, 0, 0, 0);
-    red   			= gdImageColorAllocate(image, 255, 0, 0);
-    green 			= gdImageColorAllocate(image, 0, 255, 0);
-    grey  			= gdImageColorAllocate(image, 127, 127, 127);
-    lightgrey  	= gdImageColorAllocate(image, 230, 230, 230);
-    blue  			= gdImageColorAllocate(image, 0, 0, 255);
-    
-    
-    /** set the color of the data-line */
-    linecolor = gdImageColorAllocate(image, R, G, B);
-    
-    
-    /** set the background to white */
-    image->transparent = white;
+    /** define an array for the data */
+    float DATA[LINES][COLS];
     
     
     /** set the filepointer to the beginning of the log-file */
@@ -414,7 +442,7 @@ int main(int argc, char *argv[])
     /** read the log-file and give the data to the array */
     for (i=0; i<LINES; i++)
     {
-      for (j=0; j<2; j++)
+      for (j=0; j<COLS; j++)
       {
         fscanf(abar,"%f",&DATA[i][j]);
       }
@@ -433,13 +461,47 @@ int main(int argc, char *argv[])
       LINESTART = (LINES-shown_intervals);
     
     
+    /** write only the needed data back to the *empty* logfile */
+    /** delete logfile */
+	 	if((remove(datafile)) < 0) 
+	 	{
+      fprintf(stderr, "%s: %s: %s\n", argv[0], datafile, strerror(errno));
+      syslog( LOG_ERR, "%s: %s: %s\n", argv[0], datafile, strerror(errno));
+      syslog( LOG_ERR, "chartsd shutting down!");
+      run=0;
+      return EXIT_FAILURE;
+	 	}
+	 	
+    /** open logfile for rewriting the data */
+    if ( !(abar = fopen(datafile, "a")) )
+    {
+      fprintf(stderr, "%s: %s: %s\n", argv[0], datafile, strerror(errno));
+      syslog( LOG_ERR, "%s: %s: %s\n", argv[0], datafile, strerror(errno));
+      syslog( LOG_ERR, "chartsd shutting down!");
+      run=0;
+      return EXIT_FAILURE;
+    }
+		for (i=LINESTART; i<LINES; i++)
+		{
+			char WLINE[35];
+			sprintf(WLINE, "%d", (int)DATA[i][0]);
+			for (j=1; j<COLS; j++)
+			{
+    		sprintf(WLINE, "%s\t%.4f", WLINE, DATA[i][j]);
+			}
+			sprintf(WLINE, "%s\n", WLINE);
+			fwrite(WLINE, strlen(WLINE), 1, abar);
+		}
+		fclose(abar);
+    
+    
     /** set total counter to 0 */
     total = 0.0;
     
     
     /** we have to create a new data-array because the values are in a wrong direction */
-    float VALUES[2][(LINES-LINESTART)];
-    for (j=0; j<2; j++)
+    float VALUES[COLS][(LINES-LINESTART)];
+    for (j=0; j<COLS; j++)
     {
       ac=0;
       for (i=LINESTART; i<LINES; i++)
@@ -510,6 +572,48 @@ int main(int argc, char *argv[])
     sprintf(lowout, "Lowest: %.2f %s", lowest, unit);
     
     
+    /** create a new picture */
+    if( !(image = gdImageCreate(WIDTH, HEIGHT)) )
+    {
+      fprintf(stderr, "%s: %s\n", argv[0], strerror(errno));
+      syslog( LOG_ERR, "%s: %s\n", argv[0], strerror(errno));
+      syslog( LOG_ERR, "chartsd shutting down!");
+      run=0;
+      return EXIT_FAILURE;
+    }
+    
+    
+    /** set some colors */
+    white 			= gdImageColorAllocate(image, 255, 255, 255);
+    black 			= gdImageColorAllocate(image, 0, 0, 0);
+    red   			= gdImageColorAllocate(image, 255, 0, 0);
+    green 			= gdImageColorAllocate(image, 0, 255, 0);
+    darkgrey		= gdImageColorAllocate(image, 90, 90, 90);
+    grey  			= gdImageColorAllocate(image, 127, 127, 127);
+    lightgrey  	= gdImageColorAllocate(image, 230, 230, 230);
+    blue  			= gdImageColorAllocate(image, 0, 0, 255);
+    cyan  			= gdImageColorAllocate(image, 0, 255, 255);
+    darkcyan		= gdImageColorAllocate(image, 0, 205, 205);
+    magenta			= gdImageColorAllocate(image, 255, 0, 255);
+    darkgreen 	= gdImageColorAllocate(image, 0, 205, 0);
+    gold				= gdImageColorAllocate(image, 255, 215, 0);
+    darkgold 		= gdImageColorAllocate(image, 205, 173, 0);
+    
+    
+    /** set an array with some default colors */
+    COLOR[0] = darkgreen;
+    COLOR[1] = darkcyan;
+    COLOR[2] = darkgold;
+    COLOR[3] = green;
+    COLOR[4] = magenta;
+    COLOR[5] = cyan;
+    COLOR[6] = gold;
+    
+    
+    /** set the background to white */
+    image->transparent = white;
+    
+    
     /** Title of diagram */
     sprintf(dia_title, "%s    (%s - %s)", sensor, starttime, stoptime);
     gdImageString(image, gdFontMediumBold, 2, 2, dia_title, black);
@@ -558,19 +662,68 @@ int main(int argc, char *argv[])
     if (show_lowest_value == 1)
     	gdImageString(image, gdFontSmall, (NULLX+150), (NULLY-13), lowout, blue);
     
-    
-    for (j=1; j<2; j++)
+
+		if (show_legend == 1)
     {
+    	leglines = (COLS-1);
+    	legheight = ((leglines * 14));
+    	legwidth = legend_width;
+    	
+    	if (legend_pos == 1)
+    	{
+    		leg_ursprungX = (NULLX+70);
+    		leg_ursprungY = 30;
+    	}
+    	else if (legend_pos == 2)
+    	{
+    		leg_ursprungX = ((WIDTH-legwidth)-20);
+    		leg_ursprungY = 20;
+    	}
+    	else if (legend_pos == 3)
+    	{
+    		leg_ursprungX = (NULLX+70);
+    		leg_ursprungY = ((NULLY-30)-legheight);
+    	}
+    	else if (legend_pos == 4)
+    	{
+    		leg_ursprungX = ((WIDTH-legwidth)-20);
+    		leg_ursprungY = ((NULLY-30)-legheight);
+    	}
+			X1 = leg_ursprungX;
+			Y1 = leg_ursprungY;
+			X2 = (leg_ursprungX + legwidth);
+			Y2 = (leg_ursprungY + legheight);
+    	
+			gdImageFilledRectangle (image, X1+1, Y1-1, X2+1, Y2-1, darkgrey);
+			gdImageFilledRectangle (image, X1+2, Y1-2, X2+2, Y2-2, darkgrey);
+    	
+    	
+			gdImageFilledRectangle (image, X1, Y1, X2, Y2, lightgrey);
+			gdImageRectangle (image, X1, Y1, X2, Y2, black);
+			left = X1+10;
+			top = Y1;
+			for (j=1; j<COLS; j++)
+			{
+    		thiscolor = COLOR[(j-1)];
+				left = X1+10;
+				top = top + 12;
+				gdImageFilledRectangle (image, left, (top-5), left+5, top, thiscolor);
+				gdImageRectangle (image, left, (top-5), left+5, top, black);
+				left = left+15;
+				gdImageString(image, gdFontSmall, left, (top-10), LINE[(j-1)], thiscolor);
+			}
+    }
+    
+    for (j=1; j<COLS; j++)
+    {
+    	thiscolor = COLOR[(j-1)];
       for (i=0; i<(LINES-LINESTART); i++)
       {
-        thiscolor = linecolor;
-        
         X1 = URSPRUNGX + (XStep * i);
         Y1 = URSPRUNGY - (YStep * VALUES[j][i]);
         X2 = URSPRUNGX + (XStep * (i+1));
         Y2 = URSPRUNGY - (YStep * VALUES[j][(i+1)]);
         gdImageLine (image, X1, Y1, X2, Y2, thiscolor);
-        
       }
     }
     /** **************   END OF DIAGRAM GENERATION ************* */
