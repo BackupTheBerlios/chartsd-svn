@@ -1,41 +1,252 @@
 <html>
 <head>
-	<title> chartsd - Chart Daemon - Chart diagram generating daemon from logfiles </title>
+	<title> chartsd - Documentation </title>
 
 </head>
 <body>
 
-<h1> chartsd - Chart Daemon </h1>
+<h1> chartsd - Documentation </h1>
 
+<h2> Content </h2>
+<ul>
+	<li> <a href="#1">What is it?</a> </li>
+	<li> <a href="#2">Which versions are available?</a> </li>
+	<li> <a href="#3">What do I need to use this?</a> </li>
+	<li> <a href="#4">Where to file bugreports or get other help?</a> </li>
+	<li> <a href="#5"><b>Installation</b></a> </li>
+	<ol>
+		<li> <a href="#6">Requirements</a> </li>
+		<li> <a href="#7">Installation</a> </li>
+	</ol>
+	<li> <a href="#8">Configuration</a> </li>
+	<ol>
+		<li> <a href="#8.1">The init-script</a> </li>
+		<li> <a href="#8.2">The configuration-file</a> </li>
+		<li> <a href="#8.3">logfile generation (templog)</a> </li>
+		<li> <a href="#8.4">The first start!</a> </li>
+	</ol>
+</ul>	
+
+
+<br><br>
+
+<a name="1"></a>
 <h2> What is it? </h2>
 	chartsd is a daemon, written by <a href="mailto:dma147 _AT_ linux _DASH_ stats _DOT_ org">Alexander 'dma147' Mieland</a>
-	in the C programming language, which generates flow-charts diagrams from
+	in the C programming language, which generates 2D line diagrams from
 	any log-file which has a specific format.
 	It can be used to generate diagrams of the statistical usage
 	of the temperatures of the cpu, mainboard, harddiscs or 
 	whatever.
 	It also can be run more than once to generate more than one 
 	diagram of more than one source log-file.<br>
-	View the [<a href="screenshots.html">screenshots</a>] page for information on how it can look like.
+	View the [<a href="http://chartsd.berlios.de/screenshots.html">screenshots</a>] page for information on how it can look like.
 
+<a name="2"></a>
 <h2> Which versions are available? </h2>
 	The most actual and stable version is <a href="http://developer.berlios.de/project/showfiles.php?group_id=4600&release_id=7050">chartsd-0.3.tar.gz</a>.<br>
 	You can find it on the <a href="http://developer.berlios.de/projects/chartsd/">project-page</a> of BerliOS or you may want to click on the link to the file above.<br>
-	<strong>Don't forget to read the <a href="README">README</a> and the <a href="INSTALL">INSTALL</a> files!</strong>
+	<strong>Don't forget to read the <a href="http://chartsd.berlios.de/README">README</a> and the <a href="http://chartsd.berlios.de/INSTALL">INSTALL</a> files!</strong>
 
+<a name="3"></a>
 <h2> What do I need to use this? </h2>
-	This is part of the <a href="INSTALL">INSTALL</a> file and can be read there.
+	This is part of the <a href="http://chartsd.berlios.de/INSTALL">INSTALL</a> file and can be read there.
 
+<a name="4"></a>
 <h2> Where to file bugreports or get other help? </h2>
 	Please use the <a href="http://developer.berlios.de/bugs/?group_id=4600">bugtracker-section</a> 
 	of the <a href="http://developer.berlios.de/projects/chartsd/">project-page</a> to file any bugs you find.<br>
 	If you have other questions and or some feedback how glad you are with this tool, please write them in the 
 	<a href="http://developer.berlios.de/forum/?group_id=4600">forums</a> on the 
 	<a href="http://developer.berlios.de/projects/chartsd/">project-page</a>. ;)<br>
-	At the bottom of the <a href="README">README</a> file, you'll find some other information on how to contact me.
-	<br>
-	<br><br><br>
-	Hosted by <a href="http://www.berlios.de"><img src="http://developer.berlios.de/bslogo.php?group_id=1" border="0"></a>
+	At the bottom of the <a href="http://chartsd.berlios.de/README">README</a> file, you'll find some other information on how to contact me.
+<br><br>
+<hr><br>
+<a name="5"></a>
+<h1> Installation </h1>
+	
+<a name="6"></a>
+<h2> Requirements </h2>
+<h3> Definitly needed dependencies </h3>
+<ul>
+  <li> libgd (gd) (http://www.boutell.com/gd/) </li>
+  <li> libconfuse (confuse) (http://www.nongnu.org/confuse/)</li>
+</ul>
+<strong>NOTE: Without the libraries above, this application will not build!</strong>
+<h3> Optional Requirements </h3>
+If you want to log temperatures of your cpu, mainboard or harddiscs,
+you'll also need the applications which grabs the temperatures:
+<ul>
+  <li> lm-sensors (<a href="http://secure.netroedge.com/~lm78/">http://secure.netroedge.com/~lm78/</a>)</li>
+  <li> hddtemp (<a href="http://www.guzu.net/linux/hddtemp.php">http://www.guzu.net/linux/hddtemp.php</a>)</li>
+</ul>
+<b>Note: lm-sensors should be installed, because this is an important part of this documentation and a great tool, to get the temperature of your cpu!</b><br><br>
 
+<a name="7"></a>
+<h2> Installation </h2>
+First, you have to <a href="http://developer.berlios.de/project/showfiles.php?group_id=4600">download</a> 
+and unpack the <a href="http://developer.berlios.de/project/showfiles.php?group_id=4600">source-archive</a>
+ into a directory of your choose.<br>
+Normally you may want to unpack it into /usr/local/src:
+	<pre>    # tar -xvzf ./chartsd-&lt;version&gt;.tar.gz</pre>
+This will create a new subdirectory in the actual directory, called &quot;chartsd-&lt;version&gt;&quot;<br>
+<br>
+cd into this directory:
+<pre>    # cd ./chartsd-&lt;version&gt;</pre>
+Now you're ready to compile and install the daemon:
+<pre>    # ./configure</pre>
+<strong>Note:</strong> Try &quot;./configure --help&quot; for configure-options.<br>
+You may want to change the target to which the application will be installed:
+<pre>    # ./configure --prefix=/usr</pre>
+After configuring the source, you have to compile it:
+<pre>    # make</pre>
+And finally <b>as user &quot;root&quot;</b>, you have to install the application:
+<pre>    # make install</pre>
+This will install the whole application into the path, you've specified by &quot;./configure --prefix=...&quot;<br>
+If you don't have specified any target-path, it will be installed into &quot;/usr/local/&quot;. So the binary-files
+were going to &quot;/usr/local/bin&quot;, the share-data-files were going to &quot;/usr/local/share/chartsd&quot;.<br>
+<br>
+This application consists of two executable files, which were going into the .../bin directory, these files are &quot;chartsd&quot;
+the main daemon-application and a little bash-script, which can grab the temperatures from lm-sensors and hddtemp, which is called &quot;templog&quot;.
+&quot;templog&quot; writes the grabbed temperatures into a logfile in the correct format, which chartsd needs.<br>
+More on this in the next section.
+
+
+<br><br>
+<hr><br>
+<a name="8"></a>
+<h2> Configuration </h2>
+<strong>One important thing to notice:</strong><br>
+You can run as many instances of chartsd as you want or need. the only requirements for more 
+than one instance are as many init-scripts and different configurations as instances you 
+want to run. So you have to configure each instance on its own.<br>
+Each instance will then generate its own 2D line diagram of the grabbed temperatures or similar data.<br><br>
+
+<a name="8.1"></a>
+<strong>We will now configure the first instance all other instances has to be configured similar to the first instance, so this should be no problem anymore then.</strong><br><br>
+
+After building and installing, you have to take a look into &quot;/usr/local/share/chartsd&quot;.<br>
+It contains one sample-init-script(.sh) and four sample configurations which can directly be used to 
+generate 2D line diagrams about the temperatures of the whole system.<br>
+But we'll configure the first instance to generally generate a diagram from a logfile and not especially for 
+temperatures, so let's proceed further.<br><br>
+
+The sample-init-script should work with <b>any</b> distribution, so we'll use this one for now:<br>
+You have to be <b>root</b> to do the next steps.<br>
+Copy the sample-init-script.sh to &quot;/etc/init.d&quot; or wherever your init-scripts for your system resides:
+<pre>    # cp /usr/local/share/chartsd/chartsd-sample-init-script.sh /etc/init.d/chartsd.1</pre>
+Then open it in your favourite text-editor:
+<pre>    # vim /etc/init.d/chartsd.1</pre>
+There are only two important variables at the top of the file:
+<pre style="border:solid 1px"># which config file to use?
+CONFIGFILE="/usr/local/share/chartsd/temp.cpu.conf"
+
+# if you want to run this daemon more than once, 
+# then you have to copy this init-script and then
+# to increase this number in the new init-script
+instance=1
+</pre>
+As I mentioned before, each instance has its own configuration file, so we have to 
+modify the variable &quot;CONFIGFILE&quot; to the location of the configuration file for the first instance.<br>
+<b>We don't want to change this variable for now!</b><br>
+Simply check if the given path of &quot;CONFIGFILE&quot; is the correct path to &quot;/usr/local/share/chartsd/temp.cpu.conf&quot;.<br>
+<b>Note:</b> Remember, you could have installed the application into a different path, than the default one. The default path is 
+&quot;/usr/local&quot;, but with &quot;./configure --prefix=/usr&quot; it would be installed into &quot;/usr&quot;.<br>
+So check the path to the share-directory &quot;chartsd&quot; and change it in the variable &quot;CONFIGFILE&quot; if needed.<br><br>
+What's about the &quot;instance&quot; variable? Well, as mentioned above, we'll first configure the first instance, 
+which also implies the name of this init-script (&quot;chartsd.1&quot;), so we have to leave this variable untouched for now.<br>
+<br>
+<a name="8.2"></a>
+This was the first init-script for the first instance. Let's take a look into the configuration-file which was configured in the 
+&quot;CONFIGFILE&quot; variable:
+Open the config-file in your favourite text-editor:
+<pre>    # vim /usr/local/share/chartsd/temp.cpu.conf</pre>
+Okay, you'll see, that this file is very well documented.<br>
+Let's take a look at each variable in this file:<br>
+<b>But don't change anything for now!</b>
+
+<ul>
+	<li><i><b>SENSOR</b></i><br>
+This variable holds the name of the generated 2D line diagram. It will appear at the top of the diagram.<br>
+Take a look at the <a href="http://chartsd.berlios.de/screenshots.html">screenshot-page</a> to understand, what this means.</li><br>
+
+	<li><i><b>UNIT</b></i><br>
+This is the unit of the data for which the diagram will be generated.<br>
+For Celsius enter a &quot;C&quot;, for Fahrenheit a &quot;F&quot; and for other units enter similar things.</li><br>
+
+	<li><i><b>DATAFILE</b></i><br>
+This is the log file, from which the diagram will be generated.<br>
+It has to be a special format. You can see an example in this configuration-file, where &quot;unix_ts&quot; 
+means the unix-timestamp, which are the seconds since the begin of the unix-epoche (01.01.1970, 01:00:00 am).<br>
+The little tool &quot;templog&quot; will generate such log-files in exactly this format, but only for temperatures at this moment.</li><br>
+
+	<li><i><b>DIAGRAMFILE</b></i><br>
+This has to hold the complete path and filename of the generated diagram, which has to be a *.png file.<br>
+It would be good to change this path to something like the image-directory of your local web-page or similar, 
+so that you can make these diagrams public to others.</li><br>
+
+	<li><i><b>R, G and B</b></i><br>
+these are the r/g/b values of the color in which the data line should appear.</li><br>
+
+	<li><i><b>INTERVAL</b></i><br>
+This are the seconds between two updates of the generated diagram-file.<br>
+Note: you shouldn't set this value under a minimum of 30 seconds, better would be 60 seconds, because
+the generation will take much cpu-time, if the interval is too low.<br>
+30 or 60 seconds would be great, since the generation doesn't take longer than half a second.</li><br>
+
+	<li><i><b>WIDTH and HEIGHT</b></i><br>
+These are the width and height of the generated diagram, should be clear. ;)</li><br>
+
+	<li><i><b>MAXVALUE</b></i><br>
+This simply marks a red line in the diagram, which shouldn't be exceeded by the data.<br>
+For cpu temperatures you should set this to the absolute maximum temperature, the cpu can sustain.</li><br>
+
+	<li><i><b>MINVALUE</b></i><br>
+Similar to MAXVALUE, this is the blue line which marks a minimum.</li><br>
+</ul>
+
+We'll leave this file untouched for now. It should be clear how to use this configuration-file now.<br>
+Instead we'll take a look at the generation of such a log-file, which can be parsed and used for generation of a diagram by chartsd.<br>
+Because we haven't modified the configuration file for now, we have to generate the log-file as &quot;/var/log/charts.cpu.log&quot;.
+<br><br>
+<a name="8.3"></a>
+<b>The following steps requires, that you already have lm-sensors installed, to get the temperature of your cpu!</b><br>
+<br>
+I won't explain how to setup lm-sensors and sensors (part of lm-sensors) here! This is part of another 
+documentation (the one of lm-sensors) and should be learned from there.<br><br>
+You should already be able to read the temperature of your cpu, when you're typing &quot;sensors&quot; on your terminal:
+<pre>    # sensors</pre>
+There should appear a line like this then:
+<pre>    CPU Temp:  +33.5 C  (high =   +80 C, hyst =   +75 C)   sensor = thermistor</pre>
+
+<b>Okay, let's talk about &quot;templog&quot; and what it does for you.</b><br>
+
+<i>templog</i> is a small bash-script which parses the output of &quot;sensors&quot; and &quot;hddtemp&quot; to generate 
+some logfiles for the grabbed data.<br>
+<b>templog is *only* useful for the generation of logfiles for the temperatures of the cpu, the mainboard, and the harddiscs<br>
+For other logfiles, you have to create your own logfile-generating tool!</b><br><br>
+
+templog is created to work in a cronjob, because we want continously data of the temperatures.<br>
+templog has to be called with one commandline-argument, which tells templog which temperature to grab 
+and which logfile to generate:
+<pre>    # templog cpu</pre>
+This would generate the logfile &quot;/var/log/temp.cpu.log&quot; as configured in the configureation file.<br>
+To get continously data of the temperature of the cpu, you have to add a cronjob like this:
+<pre>    # crontab -e</pre>
+Then add the following line:
+<pre>    */1 * * * * /usr/local/bin/templog cpu &amp;>/dev/null</pre>
+<b>Remember: The path copuld be different with your path, because you could have installed chartsd into another target-prefix!</b><br>
+To find out, where templog was installed, run the following command:
+<pre>    # which templog</pre>
+<a name="8.4"></a>
+This was it all. We are finished! ;)<br>
+There is still one thing to do:<br>
+Configure your system, to start the init-script &quot;chartsd.1&quot; at boot-time.
+or run it by hand:
+<pre>    # /etc/init.d/chartsd.1 start</pre>
+After that check if the generation of the diagram-file was succeeded and if it will be updated every &lt;INTERVAL&gt; seconds.
+
+
+	
 </body>
 </html>

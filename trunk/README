@@ -4,13 +4,13 @@
 What is this?
 =============
 
-chartsd is a daemon which generates flow-charts diagrams from
+chartsd is a daemon which generates 2D line diagrams from
 any log-file which has a specific format.
-It can be used to generate diagrams of the statistical usage
+It can be used to generate 2D line diagrams of the statistical usage
 of the temperatures of the cpu, mainboard, harddiscs or 
 whatever.
 It also can be run more than once to generate more than one 
-diagram of more than one source log-file.
+2D line diagram of more than one source log-file.
 
 
 How to use this?
