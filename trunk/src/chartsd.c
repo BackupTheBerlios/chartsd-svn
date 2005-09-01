@@ -153,6 +153,7 @@ int 				i;
 int 				j;
 int					c;
 int 				LINESTART;
+int 				linestart;
 int 				start;
 int 				stop;
 int 				diff;
@@ -481,7 +482,10 @@ int main(int argc, char *argv[])
       run=0;
       return EXIT_FAILURE;
     }
-		for (i=LINESTART; i<LINES; i++)
+    linestart = (LINESTART - 50);
+    if (linestart <= 0)
+    	linestart = 0;
+		for (i=linestart; i<LINES; i++)
 		{
 			char WLINE[35];
 			sprintf(WLINE, "%d", (int)DATA[i][0]);
