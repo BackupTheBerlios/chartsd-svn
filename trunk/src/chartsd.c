@@ -61,7 +61,7 @@ FILE 				*abar;
 cfg_t 			*cfg;
 
 const char 	*program;
-const char 	*Version						=	"0.5";
+const char 	*Version						=	"0.6";
 
 char 				*config_file 				=	"/etc/charts.d/temp.hda.conf";
 char 				*sensor 						= NULL;
