@@ -73,19 +73,23 @@ case "${what}" in
 
 
     net)
-	FIRST=`grep ${DEVICE} /proc/net/dev`
+	FIRSTGRAB=`grep ${DEVICE} /proc/net/dev`
 	sleep 1
-	SECOND=`grep ${DEVICE} /proc/net/dev`
-	FIRSTIN=`echo ${FIRST} |  sed -e 's/^[^:]*:\([0-9]*\) *.*$/\1/'`
-	FIRSTOUT=`echo ${FIRST} |  sed -e 's/^[^:]*:[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *\([0-9]*\) *.*$/\1/'`
-	SECIN=`echo ${SECOND} |  sed -e 's/^[^:]*:\([0-9]*\) *.*$/\1/'`
-	SECOUT=`echo ${SECOND} |  sed -e 's/^[^:]*:[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *\([0-9]*\) *.*$/\1/'`
+	SECONDGRAB=`grep ${DEVICE} /proc/net/dev`
+	FIRSTIN=`echo ${FIRSTGRAB} |  sed -e 's/^[^:]*: *\([0-9]*\) *.*$/\1/'`
+	FIRSTOUT=`echo ${FIRSTGRAB} |  sed -e 's/^[^:]*: *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *\([0-9]*\) *.*$/\1/'`
+	SECIN=`echo ${SECONDGRAB} |  sed -e 's/^[^:]*: *\([0-9]*\) *.*$/\1/'`
+	SECOUT=`echo ${SECONDGRAB} |  sed -e 's/^[^:]*: *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *[0-9]* *\([0-9]*\) *.*$/\1/'`
 	IN=$(( ${SECIN} - ${FIRSTIN} ))
 	OUT=$(( ${SECOUT} - ${FIRSTOUT} ))
 	# if you want bits instead of bytes, then comment the
 	# folowing two lines out:
 	# IN=$(( ${IN} * 8 ))
 	# OUT=$(( ${OUT} * 8 ))
+	IN=`echo "scale=4; ${IN}/1000" | bc -l`
+	OUT=`echo "scale=4; ${OUT}/1000" | bc -l`
+	if [ "${IN:FIRST:1}" == "." ]; then IN="0${IN}"; fi
+	if [ "${OUT:FIRST:1}" == "." ]; then OUT="0${OUT}"; fi
 	echo "${TS}	${IN}	${OUT}" >> ${NETFILE}
 	;;
 
